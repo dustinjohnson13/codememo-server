@@ -1,0 +1,46 @@
+plugins {
+    id "com.moowork.node" version "1.2.0"
+}
+
+apply plugin: 'base'
+
+node {
+    download = true
+
+    version = '7.7.1'
+}
+
+def nodeModules = file('node_modules')
+
+tasks.yarn_install {
+    inputs.file file('package.json')
+    outputs.dir nodeModules
+}
+
+task install(type: YarnTask, dependsOn: [yarn_install]) {
+    inputs.file file('package.json')
+    outputs.dir nodeModules
+
+    args = ['install']
+}
+
+task flow(type: YarnTask, dependsOn: [install]) {
+
+    args = ['run', 'flow']
+
+    execOverrides {
+        it.environment['CI'] = 'true'
+    }
+}
+
+task test(type: YarnTask, dependsOn: [flow, install]) {
+    args = ['run', 'test']
+
+    execOverrides {
+        it.environment['CI'] = 'true'
+    }
+}
+
+clean.delete << nodeModules
+
+tasks.build.dependsOn flow, test
