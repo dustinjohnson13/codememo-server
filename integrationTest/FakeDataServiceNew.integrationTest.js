@@ -1,13 +1,26 @@
 //@flow
-import {FakeDataService} from "./FakeDataService";
-import {CardDetail, CollectionResponse, Deck, DeckResponse} from "./APIDomain";
+import {FakeDataService} from "../src/FakeDataService";
+import {CardDetail, CollectionResponse, Deck, DeckResponse} from "../src/APIDomain";
 
-let {describe, it, expect} = global;
+const DynamoDbLocal = require('dynamodb-local');
+const dynamoLocalPort = 8000;
 
-describe('FakeDataService', () => {
+let {describe, it, expect,} = global;
+
+describe('FakeDataService2', () => {
 
     const serviceWithNoDecks = () => new FakeDataService(undefined, []);
     const serviceWithDefaultDecks = () => new FakeDataService();
+
+    beforeAll(() => {
+        return DynamoDbLocal.launch(dynamoLocalPort, null, []).then(() => {
+            console.log("DynamoDB ready!");
+        });
+    });
+
+    afterAll(() => {
+        DynamoDbLocal.stop(dynamoLocalPort);
+    });
 
     it('can be constructed with an explict list of decks', () => {
         expect.assertions(1);
@@ -34,17 +47,6 @@ describe('FakeDataService', () => {
             expect(actual.question).toEqual(question);
             expect(actual.answer).toEqual(answer);
             expect(actual.due).toEqual(null);
-        });
-    });
-
-    it('can fetch deck by id', () => {
-        const deckId = 'deck-2';
-
-        expect.assertions(3);
-        return serviceWithDefaultDecks().fetchDeck(deckId).then((actual: DeckResponse) => {
-            expect(actual.id).toEqual(deckId);
-            expect(actual.name).toEqual('Deck2');
-            expect(actual.cards.length).toEqual(80);
         });
     });
 

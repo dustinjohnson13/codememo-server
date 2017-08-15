@@ -34,7 +34,7 @@ task flow(type: YarnTask, dependsOn: [install]) {
 }
 
 task test(type: YarnTask, dependsOn: [flow, install]) {
-    args = ['run', 'test']
+    args = ['run', 'all-test']
 
     execOverrides {
         it.environment['CI'] = 'true'
