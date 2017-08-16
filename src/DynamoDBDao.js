@@ -11,14 +11,14 @@ export default class DynamoDBDao {
     constructor(region: string, endpoint: string) {
         this.region = region
         this.endpoint = endpoint
-    }
-
-    createTable(name: string, columns: Array<ColumnDefinition>): Promise<string> {
 
         AWS.config.update({
             region: this.region,
             endpoint: this.endpoint
         })
+    }
+
+    createTable(name: string, columns: Array<ColumnDefinition>): Promise<string> {
 
         const dynamodb = new AWS.DynamoDB()
 
@@ -61,31 +61,40 @@ export default class DynamoDBDao {
         })
     }
 
-    insert(table: string, id: string, values: Array<ColumnDefinition>): Promise<string> {
+    insert(table: string, key: { [string]: string | number }, fields: { [string]: any }): Promise<any> {
+        const docClient = new AWS.DynamoDB.DocumentClient()
 
-        AWS.config.update({
-            region: this.region,
-            endpoint: this.endpoint
-        })
-
-        const docClient = new AWS.DynamoDB.DocumentClient();
-
+        const item = Object.assign({}, key, fields)
         const params = {
             TableName: table,
-            Item: {
-                "id": id,
-                "email": "blah@blah.com",
-            }
+            Item: item
         }
 
-        console.log("Adding a new item...")
         return new Promise((resolve, reject) => {
             docClient.put(params, function (err, data) {
                 if (err) {
                     console.error("Unable to add item. Error JSON:", JSON.stringify(err, null, 2))
                     reject(err)
                 } else {
-                    console.log("Added item:", JSON.stringify(data, null, 2))
+                    resolve(data)
+                }
+            })
+        })
+    }
+
+    findOne(table: string, key: { [string]: string | number }): Promise<any> {
+        const docClient = new AWS.DynamoDB.DocumentClient()
+
+        const params = {
+            TableName: table,
+            Key: key
+        }
+        return new Promise((resolve, reject) => {
+            docClient.get(params, function (err, data) {
+                if (err) {
+                    console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2))
+                    reject(err)
+                } else {
                     resolve(data)
                 }
             })

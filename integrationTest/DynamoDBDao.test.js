@@ -34,36 +34,22 @@ describe('DynamoDBDao', () => {
     it('should be able to query from tables', (done) => {
         expect.assertions(1)
 
-        const docClient = new AWS.DynamoDB.DocumentClient()
-
         const table = "Movies"
         const year = 2013
         const title = "After Earth"
+        const key = {"year": year, "title": title}
 
-        const params = {
-            TableName: table,
-            Key: {
-                "year": year,
-                "title": title
-            }
-        }
-
-        docClient.get(params, function (err, data) {
-            if (err) {
-                console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2))
-            } else {
-                expect(data.Item.info.rating).toEqual(4.9)
-                done()
-            }
+        service.findOne(table, key).then((results) => {
+            expect(results.Item.info.rating).toEqual(4.9)
+            done()
         })
     })
 
-    it('should be able to create, insert into, and query from tables', (done) => {
+    it('should be able to create tables', (done) => {
 
-        expect.assertions(2)
+        expect.assertions(1)
 
         const name = "user"
-        const id = "1"
 
         return service.createTable(name, [new ColumnDefinition("email", "string")])
             .then(() => {
@@ -79,35 +65,41 @@ describe('DynamoDBDao', () => {
                         console.log(err) // an error occurred
                     } else {
                         expect(data.TableNames).toEqual([name])
+                        done()
                     }
                 })
             })
-            .then(() => service.insert(name, id, new ColumnDefinition("email", 'someemail@blah.com')))
-            .then(() => {
+    })
 
+    it('should be able to insert into tables', (done) => {
+
+        expect.assertions(2)
+
+        const year = 2016
+        const title = "Some Great Movie"
+
+        const table = "Movies"
+        const key = {"year": year, "title": title}
+        const fields = {"info": {"one": 1, "something": "cool"}}
+
+        return service.insert(table, key, fields)
+            .then(() => {
                 const docClient = new AWS.DynamoDB.DocumentClient()
 
                 const params = {
-                    TableName: name,
+                    TableName: table,
                     Key: {
-                        "id": id
-                    },
-                    KeyConditionExpression: "#id = :id",
-                    ExpressionAttributeNames: {
-                        "#id": "id"
-                    },
-                    ExpressionAttributeValues: {
-                        ":id": id
+                        "year": year,
+                        "title": title
                     }
                 }
 
-                docClient.query(params, function (err, data) {
+                docClient.get(params, function (err, data) {
                     if (err) {
-                        console.error("Unable to query. Error:", JSON.stringify(err, null, 2))
+                        console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2))
                     } else {
-                        console.log("Query succeeded.")
-
-                        expect(data.Items).toEqual([{"id": id, "email": "blah@blah.com"}])
+                        expect(data.Item.info.one).toEqual(1)
+                        expect(data.Item.info.something).toEqual("cool")
                         done()
                     }
                 })
