@@ -1,23 +1,39 @@
 //@flow
 import DynamoDBDao from "../src/DynamoDBDao"
 import ColumnDefinition from "../src/ColumnDefinition"
+import freeport from 'freeport'
 
+const {describe, it, expect,} = global
 const AWS = require("aws-sdk")
 const DynamoDbLocal = require('dynamodb-local')
-const dynamoLocalPort = 8000
-
-let {describe, it, expect,} = global
 
 describe('DynamoDBDataService', () => {
 
     const region = "us-west-2"
-    const endpoint = `http://localhost:${dynamoLocalPort}`
 
-    const service = new DynamoDBDao(region, endpoint)
+    let dynamoLocalPort
+    let endpoint
+    let service
 
-    beforeEach(() => {
-        return DynamoDbLocal.launch(dynamoLocalPort, null, []).then(() => {
+    beforeEach(async () => {
+        await new Promise((resolve, reject) => {
+            freeport((err, port) => {
+                if (err) reject(err)
+                resolve(port)
+            })
+        }).then((port) => {
+            dynamoLocalPort = port
+
+            console.log(`Starting DynamoDB on port ${dynamoLocalPort}`)
+
+            return DynamoDbLocal.launch(dynamoLocalPort, null, [])
+        }).then(() => {
             console.log("DynamoDB ready!")
+
+            endpoint = `http://localhost:${dynamoLocalPort}`
+            service = new DynamoDBDao(region, endpoint)
+        }).catch((err) => {
+            throw err
         })
     })
 
@@ -57,11 +73,7 @@ describe('DynamoDBDataService', () => {
                 .then(() => service.insert(name, id, new ColumnDefinition("email", 'someemail@blah.com')))
                 .then(() => {
 
-                    console.log("Creating client...")
-
                     const docClient = new AWS.DynamoDB.DocumentClient()
-
-                    console.log("Created client...")
 
                     const params = {
                         TableName: name,
@@ -77,9 +89,7 @@ describe('DynamoDBDataService', () => {
                         }
                     }
 
-                    console.log("Querying now...")
                     docClient.query(params, function (err, data) {
-                        console.log("Called back...")
                         if (err) {
                             console.error("Unable to query. Error:", JSON.stringify(err, null, 2))
                         } else {
