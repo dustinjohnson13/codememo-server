@@ -13,7 +13,7 @@ describe('DynamoDBDao', () => {
     let service
 
     beforeEach(async () => {
-        await startAndLoadData().then((assignedPort: number) => {
+        await startAndLoadData(true).then((assignedPort: number) => {
             port = assignedPort
             console.log(`Creating service for port ${port}.`)
 
@@ -49,7 +49,7 @@ describe('DynamoDBDao', () => {
 
         const name = "user"
 
-        return service.createTable(name, [new ColumnDefinition("email", "string")])
+        return service.createTable(name, [])
             .then(() => {
 
                 const dynamoDB = new AWS.DynamoDB()

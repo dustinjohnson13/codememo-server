@@ -18,13 +18,12 @@ export default class DynamoDBDao {
         })
     }
 
-    createTable(name: string, columns: Array<ColumnDefinition>): Promise<string> {
+    createTable(name: string, columns: Array<ColumnDefinition>): Promise<void> {
 
         const dynamodb = new AWS.DynamoDB()
 
         const keySchema = [
-            {AttributeName: "id", KeyType: "HASH"},  //Partition key
-            {AttributeName: "email", KeyType: "RANGE"}  //Sort key
+            {AttributeName: "id", KeyType: "HASH"}
         ]
 
         const additionalColumnDefinitions = columns.map((column: ColumnDefinition) => {
@@ -55,7 +54,7 @@ export default class DynamoDBDao {
                     reject(err)
                 } else {
                     console.log("Created table. Table description JSON:", JSON.stringify(data, null, 2))
-                    resolve("Created table")
+                    resolve()
                 }
             })
         })

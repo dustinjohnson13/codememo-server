@@ -8,12 +8,12 @@ const fs = require('fs')
 export const REGION = "us-west-2"
 export const SAMPLE_DATA_TABLE_NAME = "Movies"
 
-export const startAndLoadData = (): Promise<number> => {
+export const startAndLoadData = (useSamples: boolean): Promise<number> => {
     return allocatePort()
         .then(port => startDynamoDB(port))
         .then(port => prepareAWSConfig(port))
-        .then(port => createSampleTable(port))
-        .then(port => loadSampleData(port))
+        .then(port => createSampleTable(port, useSamples))
+        .then(port => loadSampleData(port, useSamples))
         .catch((err) => {
             console.log("Error!")
             throw err
@@ -52,26 +52,29 @@ const prepareAWSConfig = (port: number) => {
     return port
 }
 
-const createSampleTable = (port: number) => {
-    console.log("Creating sample data table.")
-
-    const params = {
-        TableName: SAMPLE_DATA_TABLE_NAME,
-        KeySchema: [
-            {AttributeName: "year", KeyType: "HASH"},  //Partition key
-            {AttributeName: "title", KeyType: "RANGE"}  //Sort key
-        ],
-        AttributeDefinitions: [
-            {AttributeName: "year", AttributeType: "N"},
-            {AttributeName: "title", AttributeType: "S"}
-        ],
-        ProvisionedThroughput: {
-            ReadCapacityUnits: 10,
-            WriteCapacityUnits: 10
-        }
+const createSampleTable = (port: number, loadSampleData: boolean) => {
+    if (!loadSampleData) {
+        return Promise.resolve(port)
     }
 
     return new Promise((resolve, reject) => {
+        console.log("Creating sample data table.")
+
+        const params = {
+            TableName: SAMPLE_DATA_TABLE_NAME,
+            KeySchema: [
+                {AttributeName: "year", KeyType: "HASH"},  //Partition key
+                {AttributeName: "title", KeyType: "RANGE"}  //Sort key
+            ],
+            AttributeDefinitions: [
+                {AttributeName: "year", AttributeType: "N"},
+                {AttributeName: "title", AttributeType: "S"}
+            ],
+            ProvisionedThroughput: {
+                ReadCapacityUnits: 10,
+                WriteCapacityUnits: 10
+            }
+        }
         new AWS.DynamoDB().createTable(params, function (err, data) {
             if (err) {
                 console.error("Unable to create table. Error JSON:", JSON.stringify(err, null, 2))
@@ -83,7 +86,11 @@ const createSampleTable = (port: number) => {
     })
 }
 
-const loadSampleData = (port: number) => {
+const loadSampleData = (port: number, loadSampleData: boolean) => {
+    if (!loadSampleData) {
+        return Promise.resolve(port)
+    }
+
     console.log("Loading sample data.")
 
     const allMovies = JSON.parse(fs.readFileSync('./integrationTest/moviedata.json', 'utf8'))
