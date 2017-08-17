@@ -123,4 +123,38 @@ describe('DynamoDBDao', () => {
                 })
             })
     })
+
+    it('should be able to delete items', (done) => {
+
+        expect.assertions(1)
+
+        const table = SAMPLE_DATA_TABLE_NAME
+        const year = 2013
+        const title = "After Earth"
+        const key = {"year": year, "title": title}
+
+        const fields = {"info": {"one": 1, "something": "cool"}}
+
+        return service.delete(table, key)
+            .then(() => {
+                const docClient = new AWS.DynamoDB.DocumentClient()
+
+                const params = {
+                    TableName: table,
+                    Key: {
+                        "year": year,
+                        "title": title
+                    }
+                }
+
+                docClient.get(params, function (err, data) {
+                    if (err) {
+                        console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2))
+                    } else {
+                        expect(data.Item).toEqual(undefined)
+                        done()
+                    }
+                })
+            })
+    })
 })

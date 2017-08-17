@@ -101,6 +101,26 @@ export default class DynamoDBDao {
         })
     }
 
+    delete(table: string, key: { [string]: string | number }): Promise<any> {
+        const docClient = new AWS.DynamoDB.DocumentClient()
+
+        const params = {
+            TableName: table,
+            Key: key
+        }
+
+        return new Promise((resolve, reject) => {
+            docClient.delete(params, function (err, data) {
+                if (err) {
+                    console.error("Unable to add item. Error JSON:", JSON.stringify(err, null, 2))
+                    reject(err)
+                } else {
+                    resolve(data)
+                }
+            })
+        })
+    }
+
     findOne(table: string, key: { [string]: string | number }): Promise<any> {
         const docClient = new AWS.DynamoDB.DocumentClient()
 

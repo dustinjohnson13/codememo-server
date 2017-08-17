@@ -6,7 +6,7 @@ const AWS = require("aws-sdk")
 const fs = require('fs')
 
 export const REGION = "us-west-2"
-export const SAMPLE_DATA_TABLE_NAME = "Movies" 
+export const SAMPLE_DATA_TABLE_NAME = "Movies"
 
 export const startAndLoadData = (): Promise<number> => {
     return allocatePort()
