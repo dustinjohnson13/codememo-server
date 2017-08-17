@@ -1,14 +1,12 @@
 //@flow
 import DynamoDBDao from "../src/DynamoDBDao"
 import ColumnDefinition from "../src/ColumnDefinition"
-import {startAndLoadData, stop} from './DynamoDBHelper'
+import {REGION, SAMPLE_DATA_TABLE_NAME, startAndLoadData, stop} from './DynamoDBHelper'
 
 const {describe, it, expect,} = global
 const AWS = require("aws-sdk")
 
 describe('DynamoDBDao', () => {
-
-    const region = "us-west-2"
 
     let port
     let endpoint
@@ -20,7 +18,7 @@ describe('DynamoDBDao', () => {
             console.log(`Creating service for port ${port}.`)
 
             endpoint = `http://localhost:${port}`
-            service = new DynamoDBDao(region, endpoint)
+            service = new DynamoDBDao(REGION, endpoint)
         }).catch((err) => {
             console.log("Error!")
             throw err
@@ -34,7 +32,7 @@ describe('DynamoDBDao', () => {
     it('should be able to query from tables', (done) => {
         expect.assertions(1)
 
-        const table = "Movies"
+        const table = SAMPLE_DATA_TABLE_NAME
         const year = 2013
         const title = "After Earth"
         const key = {"year": year, "title": title}
@@ -56,15 +54,35 @@ describe('DynamoDBDao', () => {
 
                 const dynamoDB = new AWS.DynamoDB()
 
-                const params = {
-                    ExclusiveStartTableName: 'table_name', // optional (for pagination, returned as LastEvaluatedTableName)
-                    Limit: 1, // optional (to further limit the number of table names returned per page)
-                }
+                const params = {}
+
                 dynamoDB.listTables(params, function (err, data) {
                     if (err) {
                         console.log(err) // an error occurred
                     } else {
-                        expect(data.TableNames).toEqual([name])
+                        expect(data.TableNames).toEqual([SAMPLE_DATA_TABLE_NAME, name])
+                        done()
+                    }
+                })
+            })
+    })
+
+    it('should be able to drop tables', (done) => {
+
+        expect.assertions(1)
+
+        return service.dropTable(SAMPLE_DATA_TABLE_NAME)
+            .then(() => {
+
+                const dynamoDB = new AWS.DynamoDB()
+
+                const params = {}
+
+                dynamoDB.listTables(params, function (err, data) {
+                    if (err) {
+                        console.log(err) // an error occurred
+                    } else {
+                        expect(data.TableNames).toEqual([])
                         done()
                     }
                 })
@@ -78,7 +96,7 @@ describe('DynamoDBDao', () => {
         const year = 2016
         const title = "Some Great Movie"
 
-        const table = "Movies"
+        const table = SAMPLE_DATA_TABLE_NAME
         const key = {"year": year, "title": title}
         const fields = {"info": {"one": 1, "something": "cool"}}
 

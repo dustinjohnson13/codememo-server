@@ -5,7 +5,8 @@ const DynamoDbLocal = require('dynamodb-local')
 const AWS = require("aws-sdk")
 const fs = require('fs')
 
-const region = "us-west-2"
+export const REGION = "us-west-2"
+export const SAMPLE_DATA_TABLE_NAME = "Movies" 
 
 export const startAndLoadData = (): Promise<number> => {
     return allocatePort()
@@ -44,7 +45,7 @@ const prepareAWSConfig = (port: number) => {
     console.log(`DynamoDB ready at ${endpoint}.`)
 
     AWS.config.update({
-        region,
+        region: REGION,
         endpoint
     })
 
@@ -55,7 +56,7 @@ const createSampleTable = (port: number) => {
     console.log("Creating sample data table.")
 
     const params = {
-        TableName: "Movies",
+        TableName: SAMPLE_DATA_TABLE_NAME,
         KeySchema: [
             {AttributeName: "year", KeyType: "HASH"},  //Partition key
             {AttributeName: "title", KeyType: "RANGE"}  //Sort key
@@ -90,7 +91,7 @@ const loadSampleData = (port: number) => {
 
     const promises = allMovies.map((movie) => {
         const params = {
-            TableName: "Movies",
+            TableName: SAMPLE_DATA_TABLE_NAME,
             Item: {
                 "year": movie.year,
                 "title": movie.title,

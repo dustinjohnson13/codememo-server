@@ -61,6 +61,25 @@ export default class DynamoDBDao {
         })
     }
 
+    dropTable(name: string): Promise<string> {
+        return new Promise((resolve, reject) => {
+            const params = {
+                TableName: name
+            }
+
+            const dynamodb = new AWS.DynamoDB()
+
+            dynamodb.deleteTable(params, function (err, data) {
+                if (err) {
+                    console.error("Unable to drop table. Error JSON:", JSON.stringify(err, null, 2))
+                    reject(err)
+                } else {
+                    resolve("Dropped table")
+                }
+            })
+        })
+    }
+
     insert(table: string, key: { [string]: string | number }, fields: { [string]: any }): Promise<any> {
         const docClient = new AWS.DynamoDB.DocumentClient()
 
