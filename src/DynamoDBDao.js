@@ -101,6 +101,39 @@ export default class DynamoDBDao {
         })
     }
 
+    update(table: string, key: { [string]: string | number }, fields: [Map<string, *>]): Promise<any> {
+        const docClient = new AWS.DynamoDB.DocumentClient()
+
+        const expressions= []
+        const expressionValues = {}
+
+        let fieldNum = 0
+        for (let field of fields) {
+            for (let [k, v] of field) {
+                expressions.push(`${k} = :${fieldNum}`)
+                expressionValues[`:${fieldNum++}`] = v
+            }
+        }
+
+        const params = {
+            TableName: table,
+            Key: key,
+            UpdateExpression: 'SET ' + expressions.join(","),
+            ExpressionAttributeValues: expressionValues
+        }
+
+        return new Promise((resolve, reject) => {
+            docClient.update(params, function (err, data) {
+                if (err) {
+                    console.error("Unable to update item. Error JSON:", JSON.stringify(err, null, 2))
+                    reject(err)
+                } else {
+                    resolve(data)
+                }
+            })
+        })
+    }
+
     delete(table: string, key: { [string]: string | number }): Promise<any> {
         const docClient = new AWS.DynamoDB.DocumentClient()
 

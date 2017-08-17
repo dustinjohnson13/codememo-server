@@ -124,6 +124,50 @@ describe('DynamoDBDao', () => {
             })
     })
 
+    it('should be able to update items', (done) => {
+
+        expect.assertions(2)
+
+        const table = SAMPLE_DATA_TABLE_NAME
+        const year = 2013
+        const title = "After Earth"
+        const key = {"year": year, "title": title}
+
+        const expectedRating = 9.9
+        const expectedActors = [
+            "Guy One",
+            "Guy Two"
+        ]
+        const updates = new Map();
+        updates.set("info.rating", expectedRating)
+        updates.set("info.actors", expectedActors)
+
+        const fields = [updates]
+
+        return service.update(table, key, fields)
+            .then(() => {
+                const docClient = new AWS.DynamoDB.DocumentClient()
+
+                const params = {
+                    TableName: table,
+                    Key: {
+                        "year": year,
+                        "title": title
+                    }
+                }
+
+                docClient.get(params, function (err, data) {
+                    if (err) {
+                        console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2))
+                    } else {
+                        expect(data.Item.info.rating).toEqual(expectedRating)
+                        expect(data.Item.info.actors).toEqual(expectedActors)
+                        done()
+                    }
+                })
+            })
+    })
+
     it('should be able to delete items', (done) => {
 
         expect.assertions(1)
@@ -132,8 +176,6 @@ describe('DynamoDBDao', () => {
         const year = 2013
         const title = "After Earth"
         const key = {"year": year, "title": title}
-
-        const fields = {"info": {"one": 1, "something": "cool"}}
 
         return service.delete(table, key)
             .then(() => {
