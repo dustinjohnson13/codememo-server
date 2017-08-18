@@ -1,8 +1,10 @@
 //@flow
-import DynamoDBDao from "../../src/dynamodb/DynamoDBDao"
-import {REGION, startAndLoadData, stop} from './DynamoDBHelper'
+import {loadCollectionData, REGION, startAndLoadData, stop} from './DynamoDBHelper'
 import {
-    CARD_TABLE, COLLECTION_TABLE, DECK_TABLE, DynamoDBDataService,
+    CARD_TABLE,
+    COLLECTION_TABLE,
+    DECK_TABLE,
+    DynamoDBDataService,
     USER_TABLE
 } from "../../src/dynamodb/DynamoDBDataService"
 import User from "../../src/entity/User"
@@ -89,7 +91,7 @@ describe('DynamoDBDataService', () => {
 
         return persist.then((persisted: Array<Card>) => {
 
-            const originalById = new Map(entities.map((i) => [i.id, i]));
+            const originalById = new Map(entities.map((i) => [i.id, i]))
 
             persisted.forEach((entity, idx) => {
 
@@ -176,6 +178,36 @@ describe('DynamoDBDataService', () => {
                     expect(data.Item.d).toEqual(entity.decks)
                     done()
                 }
+            })
+        })
+    })
+
+    it('should be able to delete a user', (done) => {
+        expect.assertions(1)
+
+        loadCollectionData(port).then(() => {
+
+            const id = "d1eda90c-8413-11e7-bb31-be2e44b06b34"
+
+            service.deleteUser(id).then((user) => {
+
+                const docClient = new AWS.DynamoDB.DocumentClient()
+
+                const params = {
+                    TableName: USER_TABLE,
+                    Key: {
+                        "id": id
+                    }
+                }
+
+                docClient.get(params, function (err, data) {
+                    if (err) {
+                        console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2))
+                    } else {
+                        expect(data.Item).toBeUndefined()
+                        done()
+                    }
+                })
             })
         })
     })

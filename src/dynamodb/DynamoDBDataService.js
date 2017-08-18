@@ -68,4 +68,8 @@ export class DynamoDBDataService {
 
         return this.dao.insert(COLLECTION_TABLE, {"id": collection.id}, fields).then(() => Promise.resolve(collection))
     }
+
+    deleteUser(id: string): Promise<string> {
+        return this.dao.delete(USER_TABLE, {"id": id}).then(() => Promise.resolve(id))
+    }
 }

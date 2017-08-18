@@ -5,7 +5,8 @@ const DynamoDbLocal = require('dynamodb-local')
 const AWS = require("aws-sdk")
 const fs = require('fs')
 
-const SAMPLE_DATA_JSON = './integrationTest/dynamodb/moviedata.json'
+const TEST_DATA_DIR = './integrationTest/dynamodb/testData'
+const SAMPLE_DATA_JSON = `${TEST_DATA_DIR}/moviedata.json`
 
 export const REGION = "us-west-2"
 export const SAMPLE_DATA_TABLE_NAME = "Movies"
@@ -118,6 +119,43 @@ const loadSampleData = (port: number, loadSampleData: boolean) => {
             })
         })
     })
+
+    return Promise.all(promises).then(() => port)
+}
+
+export const loadCollectionData = (port: number) => {
+
+    console.log("Loading collection data.")
+
+    const toLoad = new Map()
+    toLoad.set("User", `${TEST_DATA_DIR}//user.json`)
+    toLoad.set("Collection", `${TEST_DATA_DIR}/collection.json`)
+    toLoad.set("Deck", `${TEST_DATA_DIR}/deck.json`)
+    toLoad.set("Card", `${TEST_DATA_DIR}/card.json`)
+
+    const docClient = new AWS.DynamoDB.DocumentClient()
+    const promises = []
+
+    toLoad.forEach((file, table) => {
+        const content = JSON.parse(fs.readFileSync(file, 'utf8'))
+        content.map((item) => {
+            const params = {
+                TableName: table,
+                Item: item
+            }
+
+            promises.push(new Promise((resolve, reject) => {
+                docClient.put(params, function (err, data) {
+                    if (err) {
+                        reject(err)
+                    } else {
+                        resolve(port)
+                    }
+                })
+            }))
+        })
+    })
+
 
     return Promise.all(promises).then(() => port)
 }
