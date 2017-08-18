@@ -1,8 +1,9 @@
 //@flow
 import DynamoDBDao from "../../src/dynamodb/DynamoDBDao"
 import {REGION, startAndLoadData, stop} from './DynamoDBHelper'
-import {DynamoDBDataService, USER_TABLE} from "../../src/dynamodb/DynamoDBDataService"
+import {CARD_TABLE, DynamoDBDataService, USER_TABLE} from "../../src/dynamodb/DynamoDBDataService"
 import User from "../../src/entity/User"
+import Card from "../../src/entity/Card"
 
 const {describe, it, expect,} = global
 const AWS = require("aws-sdk")
@@ -50,7 +51,6 @@ describe('DynamoDBDao', () => {
                 if (err) {
                     console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2))
                 } else {
-                    console.log(data)
                     expect(data.Item.email).toEqual(user.email)
                     done()
                 }
@@ -73,4 +73,48 @@ describe('DynamoDBDao', () => {
     //         })
     // })
 
+    it('should be able to create a card', (done) => {
+        expect.assertions(8)
+
+        const entity = new Card(undefined, "Question 1?", "Answer 1?", undefined)
+        const entity2 = new Card(undefined, "Question 2?", "Answer 2?", 20999)
+        const entities = [entity, entity2]
+
+        const persist = Promise.all(entities.map((card) => service.saveCard(card)))
+
+        return persist.then((persisted: Array<Card>) => {
+
+            const originalById = new Map(entities.map((i) => [i.id, i]));
+
+            persisted.forEach((entity, idx) => {
+
+                expect(entity.id).toBeDefined()
+
+                const docClient = new AWS.DynamoDB.DocumentClient()
+
+                const params = {
+                    TableName: CARD_TABLE,
+                    Key: {
+                        "id": entity.id
+                    }
+                }
+
+                docClient.get(params, function (err, data) {
+                    if (err) {
+                        console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2))
+                    } else {
+                        const original = originalById.get(data.Item.id)
+                        if (original) {
+                            expect(data.Item.q).toEqual(original.question)
+                            expect(data.Item.a).toEqual(original.answer)
+                            expect(data.Item.d).toEqual(original.due)
+                        }
+                        if (idx === 1) {
+                            done()
+                        }
+                    }
+                })
+            })
+        })
+    })
 })
