@@ -5,9 +5,11 @@ import User from "../entity/User"
 import uuid from 'uuid'
 import IndexDefinition from "../IndexDefinition"
 import Card from "../entity/Card"
+import Deck from "../entity/Deck"
 
 export const USER_TABLE = "User"
 export const CARD_TABLE = "Card"
+export const DECK_TABLE = "Deck"
 
 export class DynamoDBDataService {
 
@@ -19,8 +21,9 @@ export class DynamoDBDataService {
 
     init(): Promise<void> {
         // Note: DynamoDB secondary indexes don't guarantee uniqueness
-        return this.dao.createTable('User', [new IndexDefinition("email", "string")])
-            .then(() => this.dao.createTable('Card', []))
+        return this.dao.createTable(USER_TABLE, [new IndexDefinition("email", "string")])
+            .then(() => this.dao.createTable(CARD_TABLE, []))
+            .then(() => this.dao.createTable(DECK_TABLE, []))
     }
 
     saveUser(user: User): Promise<User> {
@@ -42,5 +45,14 @@ export class DynamoDBDataService {
         card.id = id
 
         return this.dao.insert(CARD_TABLE, {"id": id}, fields).then(() => Promise.resolve(card))
+    }
+
+    saveDeck(deck: Deck): Promise<Deck> {
+        const id = uuid.v1()
+        const fields: Object = {"n": deck.name, "c": deck.cards}
+
+        deck.id = id
+
+        return this.dao.insert(DECK_TABLE, {"id": id}, fields).then(() => Promise.resolve(deck))
     }
 }
