@@ -377,4 +377,140 @@ describe('DynamoDBDataService', () => {
             })
         })
     })
+
+    it('should be able to update a user', (done) => {
+        expect.assertions(1)
+
+        loadCollectionData(port).then(() => {
+
+            const id = "d1eda90c-8413-11e7-bb31-be2e44b06b34"
+            const newEmail = "yoyoyo@somewhereelse.com"
+
+            service.updateUser(new User(id, newEmail)).then((user) => {
+
+                const docClient = new AWS.DynamoDB.DocumentClient()
+
+                const params = {
+                    TableName: USER_TABLE,
+                    Key: {
+                        "id": id
+                    }
+                }
+
+                docClient.get(params, function (err, data) {
+                    if (err) {
+                        console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2))
+                    } else {
+                        expect(data.Item.email).toEqual(newEmail)
+                        done()
+                    }
+                })
+            })
+        })
+    })
+
+    it('should be able to update a card', (done) => {
+        expect.assertions(3)
+
+        loadCollectionData(port).then(() => {
+
+            const id = "7c7a2ddc-8414-11e7-bb31-be2e44b06b34"
+            const newQuestion = "newQuestion?"
+            const newAnswer = "newAnswer?"
+            const newDue = 12
+
+            service.updateCard(new Card(id, newQuestion, newAnswer, newDue)).then((updated) => {
+
+                const docClient = new AWS.DynamoDB.DocumentClient()
+
+                const params = {
+                    TableName: CARD_TABLE,
+                    Key: {
+                        "id": id
+                    }
+                }
+
+                docClient.get(params, function (err, data) {
+                    if (err) {
+                        console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2))
+                    } else {
+                        expect(data.Item.q).toEqual(newQuestion)
+                        expect(data.Item.a).toEqual(newAnswer)
+                        expect(data.Item.d).toEqual(newDue)
+                        done()
+                    }
+                })
+            })
+        })
+    })
+
+    it('should be able to update a deck', (done) => {
+        expect.assertions(2)
+
+        loadCollectionData(port).then(() => {
+
+            const id = "ff279d7e-8413-11e7-bb31-be2e44b06b34"
+            const newName = "SomeNewName"
+            const newCards = [
+                "122",
+                "233",
+                "344"
+            ]
+            service.updateDeck(new Deck(id, newName, newCards)).then((updated) => {
+
+                const docClient = new AWS.DynamoDB.DocumentClient()
+
+                const params = {
+                    TableName: DECK_TABLE,
+                    Key: {
+                        "id": id
+                    }
+                }
+
+                docClient.get(params, function (err, data) {
+                    if (err) {
+                        console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2))
+                    } else {
+                        expect(data.Item.n).toEqual(newName)
+                        expect(data.Item.c).toEqual(newCards)
+                        done()
+                    }
+                })
+            })
+        })
+    })
+
+    it('should be able to update a collection', (done) => {
+        expect.assertions(1)
+
+        loadCollectionData(port).then(() => {
+
+            const id = "d1eda90c-8413-11e7-bb31-be2e44b06b34"
+            const newDecks = [
+                "333",
+                "222",
+                "aaa"
+            ]
+            service.updateCollection(new Collection(id, newDecks)).then((updated) => {
+
+                const docClient = new AWS.DynamoDB.DocumentClient()
+
+                const params = {
+                    TableName: COLLECTION_TABLE,
+                    Key: {
+                        "id": id
+                    }
+                }
+
+                docClient.get(params, function (err, data) {
+                    if (err) {
+                        console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2))
+                    } else {
+                        expect(data.Item.d).toEqual(newDecks)
+                        done()
+                    }
+                })
+            })
+        })
+    })
 })

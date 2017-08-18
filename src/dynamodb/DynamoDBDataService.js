@@ -38,6 +38,19 @@ export class DynamoDBDataService {
         return this.dao.insert(USER_TABLE, {"id": id}, fields).then(() => Promise.resolve(user))
     }
 
+    updateUser(user: User): Promise<User> {
+        const id = user.id
+
+        const updates = new Map()
+        updates.set("email", user.email)
+
+        if (!id) {
+            throw new Error("User must have id specified.")
+        }
+
+        return this.dao.update(USER_TABLE, {"id": id}, [updates]).then(() => Promise.resolve(user))
+    }
+
     saveCard(card: Card): Promise<Card> {
         const id = uuid.v1()
         const fields: Object = {"q": card.question, "a": card.answer}
@@ -50,6 +63,21 @@ export class DynamoDBDataService {
         return this.dao.insert(CARD_TABLE, {"id": id}, fields).then(() => Promise.resolve(card))
     }
 
+    updateCard(card: Card): Promise<Card> {
+        const id = card.id
+
+        if (!id) {
+            throw new Error("Card must have id specified.")
+        }
+
+        const updates = new Map()
+        updates.set("q", card.question)
+        updates.set("a", card.answer)
+        updates.set("d", card.due)
+
+        return this.dao.update(CARD_TABLE, {"id": id}, [updates]).then(() => Promise.resolve(card))
+    }
+
     saveDeck(deck: Deck): Promise<Deck> {
         const id = uuid.v1()
         const fields: Object = {"n": deck.name, "c": deck.cards}
@@ -57,6 +85,20 @@ export class DynamoDBDataService {
         deck.id = id
 
         return this.dao.insert(DECK_TABLE, {"id": id}, fields).then(() => Promise.resolve(deck))
+    }
+
+    updateDeck(deck: Deck): Promise<Deck> {
+        const id = deck.id
+
+        if (!id) {
+            throw new Error("Deck must have id specified.")
+        }
+
+        const updates = new Map()
+        updates.set("n", deck.name)
+        updates.set("c", deck.cards)
+
+        return this.dao.update(DECK_TABLE, {"id": id}, [updates]).then(() => Promise.resolve(deck))
     }
 
     saveCollection(collection: Collection): Promise<Collection> {
@@ -67,6 +109,15 @@ export class DynamoDBDataService {
         }
 
         return this.dao.insert(COLLECTION_TABLE, {"id": collection.id}, fields).then(() => Promise.resolve(collection))
+    }
+
+    updateCollection(collection: Collection): Promise<Collection> {
+        const id = collection.id
+
+        const updates = new Map()
+        updates.set("d", collection.decks)
+
+        return this.dao.update(COLLECTION_TABLE, {"id": id}, [updates]).then(() => Promise.resolve(collection))
     }
 
     deleteUser(id: string): Promise<string> {
