@@ -211,4 +211,94 @@ describe('DynamoDBDataService', () => {
             })
         })
     })
+
+    it('should be able to delete a card', (done) => {
+        expect.assertions(1)
+
+        loadCollectionData(port).then(() => {
+
+            const id = "7c7a2ddc-8414-11e7-bb31-be2e44b06b34"
+
+            service.deleteCard(id).then((id) => {
+
+                const docClient = new AWS.DynamoDB.DocumentClient()
+
+                const params = {
+                    TableName: CARD_TABLE,
+                    Key: {
+                        "id": id
+                    }
+                }
+
+                docClient.get(params, function (err, data) {
+                    if (err) {
+                        console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2))
+                    } else {
+                        expect(data.Item).toBeUndefined()
+                        done()
+                    }
+                })
+            })
+        })
+    })
+
+    it('should be able to delete a deck', (done) => {
+        expect.assertions(1)
+
+        loadCollectionData(port).then(() => {
+
+            const id = "ff279d7e-8413-11e7-bb31-be2e44b06b34"
+
+            service.deleteDeck(id).then((id) => {
+
+                const docClient = new AWS.DynamoDB.DocumentClient()
+
+                const params = {
+                    TableName: DECK_TABLE,
+                    Key: {
+                        "id": id
+                    }
+                }
+
+                docClient.get(params, function (err, data) {
+                    if (err) {
+                        console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2))
+                    } else {
+                        expect(data.Item).toBeUndefined()
+                        done()
+                    }
+                })
+            })
+        })
+    })
+
+    it('should be able to delete a collection', (done) => {
+        expect.assertions(1)
+
+        loadCollectionData(port).then(() => {
+
+            const id = "d1eda90c-8413-11e7-bb31-be2e44b06b34"
+
+            service.deleteCollection(id).then((id) => {
+
+                const docClient = new AWS.DynamoDB.DocumentClient()
+
+                const params = {
+                    TableName: COLLECTION_TABLE,
+                    Key: {
+                        "id": id
+                    }
+                }
+
+                docClient.get(params, function (err, data) {
+                    if (err) {
+                        console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2))
+                    } else {
+                        expect(data.Item).toBeUndefined()
+                        done()
+                    }
+                })
+            })
+        })
+    })
 })

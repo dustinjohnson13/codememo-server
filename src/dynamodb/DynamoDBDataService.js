@@ -72,4 +72,16 @@ export class DynamoDBDataService {
     deleteUser(id: string): Promise<string> {
         return this.dao.delete(USER_TABLE, {"id": id}).then(() => Promise.resolve(id))
     }
+
+    deleteCard(id: string): Promise<string> {
+        return this.dao.delete(CARD_TABLE, {"id": id}).then(() => Promise.resolve(id))
+    }
+
+    deleteDeck(id: string): Promise<string> {
+        return this.dao.delete(DECK_TABLE, {"id": id}).then(() => Promise.resolve(id))
+    }
+
+    deleteCollection(id: string): Promise<string> {
+        return this.dao.delete(COLLECTION_TABLE, {"id": id}).then(() => Promise.resolve(id))
+    }
 }
