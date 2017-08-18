@@ -1,6 +1,7 @@
 //@flow
 import DynamoDBDao from "../../src/dynamodb/DynamoDBDao"
 import {REGION, SAMPLE_DATA_TABLE_NAME, startAndLoadData, stop} from './DynamoDBHelper'
+import ColumnDefinition from "../../src/IndexDefinition"
 
 const {describe, it, expect,} = global
 const AWS = require("aws-sdk")
@@ -50,6 +51,33 @@ describe('DynamoDBDao', () => {
 
         return service.createTable(name, [])
             .then(() => {
+
+                const dynamoDB = new AWS.DynamoDB()
+
+                const params = {}
+
+                dynamoDB.listTables(params, function (err, data) {
+                    if (err) {
+                        console.log(err) // an error occurred
+                    } else {
+                        expect(data.TableNames).toEqual([SAMPLE_DATA_TABLE_NAME, name])
+                        done()
+                    }
+                })
+            })
+    })
+
+    it('should be able to create tables with a global secondary index', (done) => {
+
+        expect.assertions(2)
+
+        const name = "user"
+        const indexColumn = "email"
+
+        return service.createTable(name, [new ColumnDefinition(indexColumn, "string")])
+            .then((tableDefinition: any) => {
+
+                expect(tableDefinition.TableDescription.GlobalSecondaryIndexes[0].IndexName).toEqual(indexColumn)
 
                 const dynamoDB = new AWS.DynamoDB()
 
@@ -137,7 +165,7 @@ describe('DynamoDBDao', () => {
             "Guy One",
             "Guy Two"
         ]
-        const updates = new Map();
+        const updates = new Map()
         updates.set("info.rating", expectedRating)
         updates.set("info.actors", expectedActors)
 

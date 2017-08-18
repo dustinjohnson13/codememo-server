@@ -3,7 +3,7 @@ import DynamoDBDao from "./DynamoDBDao"
 import User from "../entity/User"
 
 import uuid from 'uuid'
-import ColumnDefinition from "../ColumnDefinition"
+import IndexDefinition from "../IndexDefinition"
 
 export const USER_TABLE = "User"
 
@@ -16,9 +16,9 @@ export class DynamoDBDataService {
     }
 
     init(): Promise<void> {
-        // DynamoDB secondary indexes don't guarantee uniqueness, so this wouldn't help
-        const secondaryIndex = [new ColumnDefinition("email", "string")]
-        return this.dao.createTable('User', [])
+        // Note: DynamoDB secondary indexes don't guarantee uniqueness
+        const secondaryIndex = [new IndexDefinition("email", "string")]
+        return this.dao.createTable('User', secondaryIndex)
     }
 
     saveUser(user: User): Promise<User> {

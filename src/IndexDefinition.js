@@ -1,4 +1,4 @@
-export default class ColumnDefinition {
+export default class IndexDefinition {
 
     name: string
     type: string

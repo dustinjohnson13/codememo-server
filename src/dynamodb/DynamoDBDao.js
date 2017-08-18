@@ -1,7 +1,10 @@
 //@flow
-import ColumnDefinition from "../ColumnDefinition"
+import IndexDefinition from "../IndexDefinition"
 
 const AWS = require("aws-sdk")
+
+const DEFAULT_READ_CAPACITY_UNITS = 5
+const DEFAULT_WRITE_CAPACITY_UNITS = 5
 
 export default class DynamoDBDao {
 
@@ -18,7 +21,7 @@ export default class DynamoDBDao {
         })
     }
 
-    createTable(name: string, columns: Array<ColumnDefinition>): Promise<void> {
+    createTable(name: string, indices: Array<IndexDefinition>): Promise<void> {
 
         const dynamodb = new AWS.DynamoDB()
 
@@ -26,43 +29,47 @@ export default class DynamoDBDao {
             {AttributeName: "id", KeyType: "HASH"}
         ]
 
-        const additionalColumnDefinitions = columns.map((column: ColumnDefinition) => {
+        const additionalIndexDefinitions = indices.map((index: IndexDefinition) => {
             return {
-                AttributeName: column.name,
-                AttributeType: "string" === column.type ? "S" : 'N'
+                AttributeName: index.name,
+                AttributeType: "string" === index.type ? "S" : 'N'
             }
         })
         const columnDefinitions = [
             {AttributeName: "id", AttributeType: "S"},
-            ...additionalColumnDefinitions
+            ...additionalIndexDefinitions
         ]
 
         const params = {
             TableName: name,
             KeySchema: keySchema,
             AttributeDefinitions: columnDefinitions,
-            // GlobalSecondaryIndexes: [
-            //     {
-            //         IndexName: "email",
-            //         KeySchema: [
-            //             {
-            //                 AttributeName: "email",
-            //                 KeyType: "HASH"
-            //             }
-            //         ],
-            //         Projection: {
-            //             ProjectionType: "KEYS_ONLY"
-            //         },
-            //         ProvisionedThroughput: {
-            //             "ReadCapacityUnits": 10,
-            //             "WriteCapacityUnits": 1
-            //         }
-            //     }
-            // ],
             ProvisionedThroughput: {
-                ReadCapacityUnits: 10,
-                WriteCapacityUnits: 10
+                ReadCapacityUnits: DEFAULT_READ_CAPACITY_UNITS,
+                WriteCapacityUnits: DEFAULT_WRITE_CAPACITY_UNITS
             }
+        }
+
+        if (indices.length > 0) {
+            // $FlowFixMe
+            params["GlobalSecondaryIndexes"] = indices.map((column: IndexDefinition) => {
+                return {
+                    IndexName: column.name,
+                    KeySchema: [
+                        {
+                            AttributeName: column.name,
+                            KeyType: "HASH"
+                        }
+                    ],
+                    Projection: {
+                        ProjectionType: "KEYS_ONLY"
+                    },
+                    ProvisionedThroughput: {
+                        "ReadCapacityUnits": DEFAULT_READ_CAPACITY_UNITS,
+                        "WriteCapacityUnits": 1
+                    }
+                }
+            })
         }
 
         return new Promise((resolve, reject) => {
@@ -71,8 +78,7 @@ export default class DynamoDBDao {
                     console.error("Unable to create table. Error JSON:", JSON.stringify(err, null, 2))
                     reject(err)
                 } else {
-                    console.log("Created table. Table description JSON:", JSON.stringify(data, null, 2))
-                    resolve()
+                    resolve(data)
                 }
             })
         })
@@ -121,7 +127,7 @@ export default class DynamoDBDao {
     update(table: string, key: { [string]: string | number }, fields: [Map<string, *>]): Promise<any> {
         const docClient = new AWS.DynamoDB.DocumentClient()
 
-        const expressions= []
+        const expressions = []
         const expressionValues = {}
 
         let fieldNum = 0
