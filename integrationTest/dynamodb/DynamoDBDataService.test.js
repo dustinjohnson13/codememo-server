@@ -1,10 +1,14 @@
 //@flow
 import DynamoDBDao from "../../src/dynamodb/DynamoDBDao"
 import {REGION, startAndLoadData, stop} from './DynamoDBHelper'
-import {CARD_TABLE, DECK_TABLE, DynamoDBDataService, USER_TABLE} from "../../src/dynamodb/DynamoDBDataService"
+import {
+    CARD_TABLE, COLLECTION_TABLE, DECK_TABLE, DynamoDBDataService,
+    USER_TABLE
+} from "../../src/dynamodb/DynamoDBDataService"
 import User from "../../src/entity/User"
 import Card from "../../src/entity/Card"
 import Deck from "../../src/entity/Deck"
+import Collection from "../../src/entity/Collection"
 
 const {describe, it, expect,} = global
 const AWS = require("aws-sdk")
@@ -143,6 +147,33 @@ describe('DynamoDBDataService', () => {
                 } else {
                     expect(data.Item.n).toEqual(entity.name)
                     expect(data.Item.c).toEqual(entity.cards)
+                    done()
+                }
+            })
+        })
+    })
+
+    it('should be able to create a collection', (done) => {
+        expect.assertions(1)
+
+        const entity = new Collection('some-id', ['deck-1', 'deck-2'])
+
+        service.saveCollection(entity).then((entity) => {
+
+            const docClient = new AWS.DynamoDB.DocumentClient()
+
+            const params = {
+                TableName: COLLECTION_TABLE,
+                Key: {
+                    "id": entity.id
+                }
+            }
+
+            docClient.get(params, function (err, data) {
+                if (err) {
+                    console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2))
+                } else {
+                    expect(data.Item.d).toEqual(entity.decks)
                     done()
                 }
             })
