@@ -301,4 +301,80 @@ describe('DynamoDBDataService', () => {
             })
         })
     })
+
+    it('should be able to query for a user', (done) => {
+        expect.assertions(2)
+
+        loadCollectionData(port).then(() => {
+
+            const id = "d1eda90c-8413-11e7-bb31-be2e44b06b34"
+
+            service.findUser(id).then((user) => {
+
+                expect(user.id).toEqual(id)
+                expect(user.email).toEqual("someone@blah.com")
+                done()
+            })
+        })
+    })
+
+    it('should be able to query for a card', (done) => {
+        expect.assertions(4)
+
+        loadCollectionData(port).then(() => {
+
+            const id = "7c7a2ddc-8414-11e7-bb31-be2e44b06b34"
+
+            service.findCard(id).then((card) => {
+                expect(card.id).toEqual(id)
+                expect(card.question).toEqual("Question 3?")
+                expect(card.answer).toEqual("Answer 3?")
+                expect(card.due).toEqual(1508331802)
+                done()
+            })
+        })
+    })
+
+    it('should be able to query for a deck', (done) => {
+        expect.assertions(3)
+
+        loadCollectionData(port).then(() => {
+
+            const id = "ff279d7e-8413-11e7-bb31-be2e44b06b34"
+
+            service.findDeck(id).then((deck) => {
+
+                expect(deck.id).toEqual(id)
+                expect(deck.name).toEqual("Deck2")
+                expect(deck.cards).toEqual([
+                    "ede15e3c-8414-11e7-bb31-be2e44b06b34",
+                    "ede160bc-8414-11e7-bb31-be2e44b06b34",
+                    "ede16422-8414-11e7-bb31-be2e44b06b34",
+                    "ede16512-8414-11e7-bb31-be2e44b06b34"
+                ])
+                done()
+            })
+        })
+    })
+
+    it('should be able to query for a collection', (done) => {
+        expect.assertions(2)
+
+        loadCollectionData(port).then(() => {
+
+            const id = "d1eda90c-8413-11e7-bb31-be2e44b06b34"
+
+            service.findCollection(id).then((collection) => {
+
+                expect(collection.id).toEqual(id)
+                expect(collection.decks).toEqual([
+                    "ff2799fa-8413-11e7-bb31-be2e44b06b34",
+                    "ff279d7e-8413-11e7-bb31-be2e44b06b34",
+                    "ff279e8c-8413-11e7-bb31-be2e44b06b34",
+                    "ff27a03a-8413-11e7-bb31-be2e44b06b34"
+                ])
+                done()
+            })
+        })
+    })
 })

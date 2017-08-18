@@ -84,4 +84,28 @@ export class DynamoDBDataService {
     deleteCollection(id: string): Promise<string> {
         return this.dao.delete(COLLECTION_TABLE, {"id": id}).then(() => Promise.resolve(id))
     }
+
+    findUser(id: string): Promise<User> {
+        return this.dao.findOne(USER_TABLE, {"id": id}).then((data) =>
+            Promise.resolve(new User(data.Item.id, data.Item.email))
+        )
+    }
+
+    findCard(id: string): Promise<Card> {
+        return this.dao.findOne(CARD_TABLE, {"id": id}).then((data) =>
+            Promise.resolve(new Card(data.Item.id, data.Item.q, data.Item.a, data.Item.d))
+        )
+    }
+
+    findDeck(id: string): Promise<Deck> {
+        return this.dao.findOne(DECK_TABLE, {"id": id}).then((data) =>
+            Promise.resolve(new Deck(data.Item.id, data.Item.n, data.Item.c))
+        )
+    }
+
+    findCollection(id: string): Promise<Collection> {
+        return this.dao.findOne(COLLECTION_TABLE, {"id": id}).then((data) =>
+            Promise.resolve(new Collection(data.Item.id, data.Item.d))
+        )
+    }
 }
