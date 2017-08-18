@@ -1,5 +1,5 @@
 //@flow
-import ColumnDefinition from "./ColumnDefinition"
+import ColumnDefinition from "../ColumnDefinition"
 
 const AWS = require("aws-sdk")
 

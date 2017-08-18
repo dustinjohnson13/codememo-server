@@ -1,6 +1,5 @@
 //@flow
-import DynamoDBDao from "../src/DynamoDBDao"
-import ColumnDefinition from "../src/ColumnDefinition"
+import DynamoDBDao from "../../src/dynamodb/DynamoDBDao"
 import {REGION, SAMPLE_DATA_TABLE_NAME, startAndLoadData, stop} from './DynamoDBHelper'
 
 const {describe, it, expect,} = global

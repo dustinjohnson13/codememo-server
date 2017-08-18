@@ -5,6 +5,8 @@ const DynamoDbLocal = require('dynamodb-local')
 const AWS = require("aws-sdk")
 const fs = require('fs')
 
+const SAMPLE_DATA_JSON = './integrationTest/dynamodb/moviedata.json'
+
 export const REGION = "us-west-2"
 export const SAMPLE_DATA_TABLE_NAME = "Movies"
 
@@ -93,7 +95,7 @@ const loadSampleData = (port: number, loadSampleData: boolean) => {
 
     console.log("Loading sample data.")
 
-    const allMovies = JSON.parse(fs.readFileSync('./integrationTest/moviedata.json', 'utf8'))
+    const allMovies = JSON.parse(fs.readFileSync(SAMPLE_DATA_JSON, 'utf8'))
     const docClient = new AWS.DynamoDB.DocumentClient()
 
     const promises = allMovies.map((movie) => {

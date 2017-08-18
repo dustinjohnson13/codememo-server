@@ -1,8 +1,8 @@
 //@flow
-import DynamoDBDao from "../src/DynamoDBDao"
+import DynamoDBDao from "../../src/dynamodb/DynamoDBDao"
 import {REGION, startAndLoadData, stop} from './DynamoDBHelper'
-import {DynamoDBDataService, USER_TABLE} from "../src/DynamoDBDataService"
-import User from "../src/entity/User"
+import {DynamoDBDataService, USER_TABLE} from "../../src/dynamodb/DynamoDBDataService"
+import User from "../../src/entity/User"
 
 const {describe, it, expect,} = global
 const AWS = require("aws-sdk")

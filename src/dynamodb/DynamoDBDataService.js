@@ -1,10 +1,9 @@
 //@flow
-
 import DynamoDBDao from "./DynamoDBDao"
-import User from "./entity/User"
+import User from "../entity/User"
 
 import uuid from 'uuid'
-import ColumnDefinition from "./ColumnDefinition"
+import ColumnDefinition from "../ColumnDefinition"
 
 export const USER_TABLE = "User"
 
@@ -27,8 +26,6 @@ export class DynamoDBDataService {
         const fields = {"email": user.email}
 
         user.id = id
-
-            // return Promise.reject(`User ${user.email} already exists.`)
 
         return this.dao.insert(USER_TABLE, {"id": id}, fields).then(() => Promise.resolve(user))
     }
