@@ -58,4 +58,19 @@ describe('DynamoDBDao', () => {
         })
     })
 
+    // it('should not be able to create multiple users with the same email', (done) => {
+    //     expect.assertions(2)
+    //
+    //     const email = "blah@somewhere.com"
+    //     const user = new User(undefined, email)
+    //
+    //     return service.saveUser(user)
+    //         .then((user) => expect(user.id).toBeDefined())
+    //         .then(() => service.saveUser(new User(undefined, email)))
+    //         .catch((err) => {
+    //             expect(err).toEqual(`User blah@somewhere.com already exists.`)
+    //             done()
+    //         })
+    // })
+
 })

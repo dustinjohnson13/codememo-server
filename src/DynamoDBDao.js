@@ -41,6 +41,24 @@ export default class DynamoDBDao {
             TableName: name,
             KeySchema: keySchema,
             AttributeDefinitions: columnDefinitions,
+            // GlobalSecondaryIndexes: [
+            //     {
+            //         IndexName: "email",
+            //         KeySchema: [
+            //             {
+            //                 AttributeName: "email",
+            //                 KeyType: "HASH"
+            //             }
+            //         ],
+            //         Projection: {
+            //             ProjectionType: "KEYS_ONLY"
+            //         },
+            //         ProvisionedThroughput: {
+            //             "ReadCapacityUnits": 10,
+            //             "WriteCapacityUnits": 1
+            //         }
+            //     }
+            // ],
             ProvisionedThroughput: {
                 ReadCapacityUnits: 10,
                 WriteCapacityUnits: 10

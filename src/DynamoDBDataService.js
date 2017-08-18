@@ -17,6 +17,8 @@ export class DynamoDBDataService {
     }
 
     init(): Promise<void> {
+        // DynamoDB secondary indexes don't guarantee uniqueness, so this wouldn't help
+        const secondaryIndex = [new ColumnDefinition("email", "string")]
         return this.dao.createTable('User', [])
     }
 
@@ -25,6 +27,8 @@ export class DynamoDBDataService {
         const fields = {"email": user.email}
 
         user.id = id
+
+            // return Promise.reject(`User ${user.email} already exists.`)
 
         return this.dao.insert(USER_TABLE, {"id": id}, fields).then(() => Promise.resolve(user))
     }
