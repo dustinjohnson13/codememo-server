@@ -10,7 +10,6 @@ stage('Test') {
         def build = "${env.JOB_NAME} - #${env.BUILD_NUMBER}".toString()
 
         def email = [to: "${env.EMAIL}", from: "${env.EMAIL}"]
-        def notify = [email: email]
 
         currentBuild.result = "SUCCESS"
 
@@ -21,8 +20,7 @@ stage('Test') {
 
             email.putAll([subject: "$build failed!", body: "${env.JOB_NAME} failed! See ${env.BUILD_URL} for details."])
 
-            def cmd = env.NOTIFY_COMMAND + " -d '${JsonOutput.toJson(notify)}'"
-            sh cmd
+            emailext body: email.body, recipientProviders: [[$class: 'DevelopersRecipientProvider']], subject: email.subject, to: "${env.EMAIL}"
 
             throw err
         }
